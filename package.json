@@ -1,0 +1,12 @@
+{
+  "name": "my js snippet",
+  "description": "Cron jobs for your node",
+  "version": "0.0.1",
+  "main": "index",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "dependencies": {
+    "co": "^4.6.0"
+  }
+}
