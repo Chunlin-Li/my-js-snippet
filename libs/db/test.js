@@ -5,11 +5,11 @@ var db = require('./mongo');
 var co = require('co');
 var utils = require('util');
 
-describe('test mongo', function () {
+describe.skip('test mongo', function () {
 
   before(function (done) {
     db.on('done', function () { done(); });
-    db.on('error', function (err) { logger.error('err info : ${err}'); done(err); });
+    db.on('error', function (err) { console.error('err info : ${err}'); done(err); });
   });
 
 
@@ -67,9 +67,34 @@ describe('test mongo', function () {
     }).catch(onError.bind(null, done));
   });
 
+  it('error no dbName configed', function (done) {
+    co(function* () {
+      assert.throws(function () {
+        db.on('error', function (err) {
+          console.log('test error , ' + err);
+        });
+        var dB = db('ssp');
+      });
+      done();
+    }).catch(onError.bind(null, done));
+  });
+
+
+
   function onError(done, err) {
     logger.error('Error Catched: ' + err.stack);
     done(err);
   }
 
+});
+
+describe('Connection Error', function () {
+  it('error on Mongo connection error', function (done) {
+    co(function* () {
+      db.on('done', function () { done(err); });
+      db.on('error', function (err) {
+        console.error('err info : ${err}'); done();
+      });
+    });
+  });
 });

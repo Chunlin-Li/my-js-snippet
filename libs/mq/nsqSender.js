@@ -4,15 +4,17 @@ var events = require('events');
 var stream = require('stream');
 var util = require('util');
 
+var http = require('http');
+
 var _senders = {};
 
 // 配置信息格式: [[alias, host, port, option]...] alias 可以作为获取 sender 的 id
+// 配置 lookupd 的地址, 动态获取 nsqd 列表并进行发送.
 //  var sample = [
 //    ['sample', '10.0.0.1', '4150', {tls: true}],
 //    ['test', 'localhost', '1234', {}]
 //  ];
 var _configs = null;
-
 
 var initiator = new events.EventEmitter();
 initiator.connected = new Set();
@@ -27,13 +29,27 @@ initiator.on('_connected_one', function (name) {
  * 初始化
  */
 function init(configs) {
+
+  // 需要先通过 http 请求从 lookupd 上获取 nsqd list, 然后随机取一个nsqd建立连接
   for (let i in configs) {
-    if (configs.hasOwnProperty(i)) {
-      let name = configs[i][0];
-      if (!_senders[name]) {
-        _senders[name] = new Sender(...configs[i]);
-      }
-    }
+    let data = '';
+    http.get(`http://${configs[i][1]}:${configs[i][2]}/nodes`, res => {
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        res.body = data.toString();
+        res.body = JSON.parse(res.body);
+        if (res.body.status_code !== 200) {
+          console.error('MQ Init Error. nsq lookup nodes failed: %s', res.status_txt);
+          return;
+        }
+        let count = res.body.data.producers.length;
+        let producer = res.body.data.producers[Math.floor(Math.random() * count)];
+        let name = configs[i][0];
+        if (!_senders[name]) {
+          _senders[name] = new Sender(name, producer.broadcast_address, ''+producer.tcp_port, configs[i][3]);
+        }
+      });
+    }).on('error', err => initiator.emit('error', err));;
   }
   _configs = configs;
   return initiator;
@@ -57,6 +73,9 @@ function Sender (name, nsqdHost, nsqdPort, options) {
     console.log('NSQ sender ready : %s', socket);
     initiator.emit('_connected_one', this.name);
   }.bind(this));
+  this.writer.on('error', err => {
+    initiator.emit('error', err);
+  });
   this.writer.connect();
 }
 
