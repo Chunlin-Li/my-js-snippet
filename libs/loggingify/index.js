@@ -1,41 +1,37 @@
 'use strict';
 var util = require('util');
 var mq = require('../mq');
+var process = require('process');
 var os = require('os');
 
+var mqServerName = 'test';  // MQ Server alias in config
+
 /*
- export logger 的生成方法, 直接根据 Logger 的 name 获取 Logger 实例.
- 所有的 Logger 实例都需要在 module 中事先配置好.
+ Facade 模块, 给 info, warn, error, debug, MQ 等提供一个统一接口.
  */
 
-var loggers = new Map();
-var debugs = new Map();
 
-var mqServerName = 'test';
-
-function _mq () {
-
-}
-
-function _logify (obj) {
+function _logify (obj, level, TRXNID) {
   return JSON.stringify({
     timestamp: new Date(),
+    level: level,
     hostname: os.hostname(),
     content: obj
   });
 }
 
+var LEVELS = {ERROR: 'ERROR', WARN: 'WARN', INFO: 'INFO', DEBUG: 'DEBUG'};
 
-function error (...args) {
-  console.warn(...args);
+function error () {
+  process.stderr.write(util.format.apply(this, arguments) + '\n');
 }
 
-function warn (...args) {
-  console.warn(...args);
+function warn () {
+  process.stderr.write(util.format.apply(this, arguments) + '\n');
 }
 
-function info (...args) {
-  console.log(...args);
+function info () {
+  process.stdout.write(util.format.apply(this, arguments) + '\n');
 }
 
 function debug (section) {
@@ -43,17 +39,9 @@ function debug (section) {
   return util.debuglog(section);
 }
 
-function toMQ (topic, obj, cb) {
-
-  mq.send(mqServerName, topic, _logify(obj), cb);
+function toMQ (topic, TRXNID, obj, cb) {
+  mq.send(mqServerName, topic, _logify(obj, LEVELS.INFO, TRXNID), cb);
 }
 
-
-module.exports = {
-  debug,
-  info,
-  warn,
-  error,
-  toMQ
-};
+module.exports = {debug, info, log: info, warn, error, toMQ};
 

@@ -84,7 +84,14 @@ function Sender (name, nsqdHost, nsqdPort, options) {
  * 发送消息
  */
 Sender.prototype.sendMessage = function (topic, message, cb) {
-  this.writer.publish(topic, message, cb);
+  this.writer.publish(topic, message, err => {
+    if (err) {
+      console.err('CATCH SEND ERR: ', err);
+      cb(err)
+    } else {
+      cb && cb();
+    }
+  });
 };
 
 /**

@@ -25,7 +25,24 @@ describe('test loggingify', function () {
     });
   });
 
-  it('test', function (done) {
+  it('info', () => {
+    logger.info('this is info');
+  });
+
+  it('warn', () => {
+    logger.warn('this is warn');
+  });
+
+  it('error', () => {
+    logger.error('this is error');
+  });
+
+  it('debug', () => {
+    // this need set the environment variable, E.g. NODE_DEBUG=Mocha
+    logger.debug('Mocha')('debug info');
+  });
+
+  it('toMQ', function (done) {
     logger.toMQ('test', 'jiajisji', (err, res) => {
       logger.info(`err : ${err} ,  res: ${res}`);
       done()
