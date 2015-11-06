@@ -7,8 +7,7 @@ js_path=/home/test/logCompress/logArchive.js
 
 CUR=$STARTHDD
 
-getTargetHDDNo () {
-  while ((CUR < 36));do
+while ((CUR < 36));do
     useage=`df -h |grep /hdd$CUR$| awk '{print $5}'|cut -d % -f 1`
     useage2=`df -h |grep /hdd$((CUR+1))$| awk '{print $5}'|cut -d % -f 1`
 
@@ -16,11 +15,8 @@ getTargetHDDNo () {
       break
     fi
     CUR=$((CUR+2))
-  done
-  return $CUR
-}
+done
 
-getTargetHDDNo
 
 echo useage = ${useage} and useage2 = ${useage2} and CUR = ${CUR}
 
@@ -29,7 +25,7 @@ sourcePath=/hdd2
 targetPath=/hdd$CUR
 targetPath2=/hdd$((CUR+1))
 
-targetDate=`date --date="-3 days" +"%Y-%m-%d"`
+targetDate=`date --date="-2 days" +"%Y-%m-%d"`
 files=`find $sourcePath -name *debian.${targetDate}*`
 
 node $js_path $CUR $files
