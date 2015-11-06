@@ -22,7 +22,7 @@ initor.on(EVENT.DONE, function () {
       if (err) {
         console.log(`err : ${err};  res: ${res}`);
       } else {
-        console.log(Math.random());
+          console.log('start......');
       }
     })
   }, 100);

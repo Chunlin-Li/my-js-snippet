@@ -97,7 +97,7 @@ function checkWrite () {
 function getWritePath (topic) {
     // filename format
     let date = new Date();
-    let dateStr = [date.getFullYear(), date.getMonth(), date.getDate()].join('-') + '_' + date.getHours();
+    let dateStr = [date.getFullYear(), ('0' + (date.getMonth()+1)).slice(-2), ('0' + date.getDate()).slice(-2)].join('-') + '_' + ('0' + date.getHours()).slice(-2);
     return path.normalize(`${output}/${topic}.${dateStr}.log`);
 }
 

@@ -23,9 +23,7 @@ function doArchive(cb) {
     let basename = path.basename(fpath);
     let fpath2 = fpath.replace(/hdd2/, 'hdd1');
     let topath = `/hdd${curHDDN}/${basename.split('.')[0]}/${basename.split('.')[2].substr(0, 7)}`;
-    let topath2 = `/hdd${curHDDN+1}/${basename.split('.')[0]}/${basename.split('.')[2].substr(0, 7)}`;
     execSync(`mkdir -p ${topath}`);
-    execSync(`mkdir -p ${topath2}`);
 
     exec(`gzip -9 < ${fpath} > ${topath}/${basename}.gz`, (err, res) => {
         if (err) {
@@ -33,25 +31,17 @@ function doArchive(cb) {
             return;
         }
         console.log((new Date()).toISOString(), 'gzip finish : ' + fpath);
-        //exec(`rm -f ${fpath} ${fpath2}`, (err, res) => {
-        exec(`sleep 1 `, (err, res) => {
+        exec(`rm -f ${fpath} ${fpath2}`, (err, res) => {
             if (err) {
                 console.error((new Date()).toISOString(), 'rm error: ', err);
                 return;
             }
             console.log((new Date()).toISOString(), `${fpath} and ${fpath2} remove finished!`);
         });
-        exec(`cp -f ${topath}/${basename}.gz ${topath2}/`, (err, res) => {
-            if (err) {
-                console.error((new Date()).toISOString(), 'cp error: ', err);
-                return;
-            }
-            console.log((new Date()).toISOString(), `backup to ${topath2} finished`);
-            doArchive();
-        });
     });
 }
 
 
+doArchive();
 doArchive();
 doArchive();
