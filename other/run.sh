@@ -21,9 +21,8 @@ done
 echo useage = ${useage} and useage2 = ${useage2} and CUR = ${CUR}
 
 
-sourcePath=/hdd2
+sourcePath=/hdd1
 targetPath=/hdd$CUR
-targetPath2=/hdd$((CUR+1))
 
 targetDate=`date --date="-2 days" +"%Y-%m-%d"`
 files=`find $sourcePath -name *debian.${targetDate}*`

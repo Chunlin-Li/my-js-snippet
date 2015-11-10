@@ -16,17 +16,20 @@ const EVENT = {
 let initor = mqSender.init('NSQ', [
   ['test', HOST, PORT, {}]
 ]);
+
 initor.on(EVENT.DONE, function () {
   setInterval(() => {
-    mqSender.send('test', 'test', 'heihei', (err, res) => {
+      let t = '' + Date.now();
+    mqSender.send('test', 'test', t, (err) => {
       if (err) {
-        console.log(`err : ${err};  res: ${res}`);
+        console.log(`--- err : ${err}`);
       } else {
-          console.log('start......');
+          console.log(t);
       }
     })
-  }, 100);
+  }, 30);
 });
+
 
 initor.on(EVENT.ERROR, err => {
   console.error(err);

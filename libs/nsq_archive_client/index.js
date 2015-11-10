@@ -11,7 +11,7 @@ var output = process.argv[4];       // absolute path
 var buffers = {};
 //const BUFFERSIZE = 67108864; // 64MB
 const BUFFERSIZE = 256; // 64MB
-const CHECKINTERVAL = 5000; // 5s
+const CHECKINTERVAL = 30000; // 30s
 var streams = {};
 var readers = {};
 
@@ -142,54 +142,3 @@ queryTopics((err, topics) =>{
 });
 var interval = setInterval(checkWrite, CHECKINTERVAL);
 
-
-
-
-
-
-
-
-
-
-
-
-
-function writeDisk_ (topic, buf) {
-    var fullPath = getWritePath(topic);
-    streams[topic] = streams[topic] || [];
-    if (streams[topic][0]) {
-        if (streams[topic][0].path !== fullPath) {
-            // rotate
-            streams[topic].unshift(fs.createWriteStream(fullPath, {flags: 'a+', mode: 438}));
-            fs.close(streams[topic][1].fd, err => {
-                if (err) console.error('close file error: ', err);
-                streams[topic].splice(1, 1);
-            });
-        }
-        //streams[topic][0].write(buf, 'utf-8', err => console.error('write to file error: ', err));
-    } else {
-        // first open
-        streams[topic][0] = fs.createWriteStream(fullPath, {flags: 'a+', mode: 438});
-    }
-    streams[topic][0].write(buf, 'utf-8', err => {
-        if (err) console.error('write to file error: ', err);
-    });
-}
-
-function doprocess_(topic, buf) {
-    if (!buffers[topic]) {
-        buffers[topic] = new Buffer(BUFFERSIZE);
-        buffers[topic]._cstart = 0;
-    }
-    let buffer = buffers[topic];
-    let len = buf.length;
-    if (buffer._cstart + len + 1 >= BUFFERSIZE) {
-        writeDisk(topic, buffer.slice(0, buffer._cstart));
-        buffer = buffers[topic] = new Buffer(BUFFERSIZE);
-        buffer._cstart = 0;
-    }
-    buf.copy(buffer, buffer._cstart);
-    buffer._cstart += len;
-    buffer.write('\n', buffer._cstart);
-    buffer._cstart += 1;
-}
