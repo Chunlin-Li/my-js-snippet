@@ -134,7 +134,7 @@ queryTopics((err, topics) =>{
             msg.finish();
         });
         nsqReader.on(nsq.Reader.ERROR, function (err) {
-            console.error('reader error ', err);
+            console.error((new Date()).toISOString(), 'reader error ', err);
         });
         nsqReader.connect();
     });
