@@ -24,28 +24,25 @@ function doArchive() {
     let topath = `/hdd${curHDDN}/${basename.split('.')[0]}/${basename.split('.')[1].substr(0, 7)}`;
     execSync(`mkdir -p ${topath}`);
 
-    exec(`mv -f ${fpath} ${topath}/`, (err, res) => {
+    // TODO: 使用 pigz 或自己实现的 gzip 工具进行压缩. 用以提高磁盘效率和压缩速度.
+
+    exec(`gzip -9 < ${fpath} > ${topath}/${basename}.gz`, (err, res) => {
+      if (err) {
+        console.error((new Date()).toISOString, ' gzip error: ', err);
+        return
+      }
+      console.log((new Date()).toISOString(), ' gzip finished : ' + fpath);
+      doArchive();
+      exec(`rm -f ${fpath}`, (err, res) => {
         if (err) {
-            console.error((new Date()).toISOString(), ' mv file error: ', err);
-            return;
+          console.error((new Date()).toISOString(), ' rm error: ', err);
+          return;
         }
-        console.log((new Date()).toISOString(), ' move finish : ' + fpath);
-        exec(`gzip -9 ${topath}/${basename}`, (err, res) => {
-            if (err) {
-                console.error((new Date()).toISOString(), ' gzip error: ', err);
-                return;
-            }
-            console.log((new Date()).toISOString(), ` gzip finish : ${topath}/${basename}`);
-            doArchive();
-            exec(`rm -f ${fpath2}`, (err, res) => {
-                if (err) {
-                    console.error((new Date()).toISOString(), 'rm error: ', err);
-                    return;
-                }
-                console.log((new Date()).toISOString(), `${fpath2} remove finished!`);
-            });
-        });
+        console.log((new Date()).toISOString(), ' rm finished : ' + fpath);
+      });
+
     });
+
 }
 
 
