@@ -3,11 +3,11 @@
 'use strict';
 
 var MongoClient = require('mongodb').MongoClient;
-var dbHost = 'mongo-adpro-general-1:1301,mongo-adpro-general-2:1301,mongo-adpro-general-3:1301';
+var dbHost = '[dbHost]';
 var dbOpts = 'auto_reconnect=true&poolSize=1';
-var dburl = `mongodb://${dbHost}/ssp?${dbOpts}`;
-var src_coll = 'reqInfo';
-var dst_coll = 'req_info';
+var dburl = `mongodb://${dbHost}/test?${dbOpts}`;
+var src_coll = 'srcCollection';
+var dst_coll = 'dstCollection';
 
 MongoClient.connect(dburl).then(db => {
     var sColl = db.collection(src_coll);
