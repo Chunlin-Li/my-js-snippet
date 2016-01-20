@@ -1,21 +1,13 @@
 'use strict';
 var net = require('net');
 
-var all = [];
+var all = {};
 
-net.createServer(sock => {
-  sock.on('data', data => {
-    console.log('Sock on data : ', data);
-  });
-  sock.on('end', () => {
-    console.log('Sock on end ');
-  });
-  sock.write('Entered \n');
-  all.push(sock);
-  all.forEach(item => {
-    if (sock !== item) {
-      sock.pipe(item);
-    }
-  });
-}).listen(1337, '127.0.0.1');
+for (let i = 0; i < 10; i++) {
+    let v = i + 1000;
+    all['key_' + i] = [i];
+    all['key_' + i].timeout = setTimeout(() => {
+        console.log('' +  i + '  - ' + all['key_'+i]);
+    }, 1000);
+}
 

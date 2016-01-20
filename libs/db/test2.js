@@ -2,45 +2,56 @@
 
 var ref;
 
-var map = new Map();
 var obj = {};
-var N = 1000000;
+var start;
+var N = 100;
+start = process.hrtime();
 
-var code = 'var x = 32 * 32';
 
-console.log('start');
 
-console.time('container cost');
+start = process.hrtime();
 for(let i = 0 ; i < N; i++) {
 }
-console.timeEnd('container cost');
+console.log('container cost ' + timeUse(start));
 
 
 for(let i = 0 ; i < N; i++) {
     obj[i] = 'data' + i;
 }
 
+var fs = require('fs');
+var ws = fs.createWriteStream('./log.log', {flags: 'a+'});
+var user = {};
 
-console.time('section 1');
-for(let i = 0 ; i < N; i++) {
-    eval(code);
+start = process.hrtime();
+/***********************************/
+for(let i = 0 ; i < N; i++ ) {
+    user.id = i;
+    foo(user);
 }
-console.timeEnd('section 1');
-
-
-console.time('section 2');
-for(let i = 0 ; i < N; i++) {
-    new Function()
+function foo (value) {
+    setTimeout(() => {
+        ws.write('' + value.id);
+    }, 500)
 }
-console.timeEnd('section 2');
+/***********************************/
+console.log('section 1 : ' + timeUse(start));
+
+for(let i = 0 ; i < N; i++) {
+    obj[i] = 'data' + i;
+}
+
+start = process.hrtime();
+/***********************************/
+for(let j = 0 ; j < N; j++) {
+
+}
+/***********************************/
+console.log('section 2 : ' + timeUse(start));
 
 
 
-//console.time('section 3');
-//for(let i = 0 ; i < 1000; i++) {
-//    for(let j = 0; j < 1000; j ++) {
-//        obj[j] = i;
-//        let x = obj[(j-1)%1000];
-//    }
-//}
-//console.timeEnd('section 3');
+function timeUse(start) {
+    var t = process.hrtime(start);
+    return '' + (t[0] * 1000000000 + t[1]) + 'ns';
+}

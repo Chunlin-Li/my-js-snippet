@@ -7,40 +7,48 @@ var defaultOption = {
 };
 
 /*
- * readline(filepath, [option], callback)
- * callback(err, line, end){}
+ * readline(filepath, [option], line_cb, [end_cb])
+ *
+ * line_cb(err, line){}
  * err : null or Error object
  * line : string, one line file text
- * end : boolean, true if ended, otherwise false.
+ *
+ * end_cb() {}
  */
 function readline(filePath) {
+    // arguments initiate
     let option = typeof arguments[1] !== 'object' ? defaultOption : Object.assign(defaultOption, arguments[1]);
-    if (typeof arguments[arguments.length -1] !== 'function')
-        throw new Error('No Callback! last argument must be callback');
-    else
-        var cb = arguments[arguments.length -1];
-    if (!fs.existsSync(filePath)) {
-        throw new Error('file not exist: ' + filePath);
+    let line_cb, end_cb;
+    for(let i = 0; i < arguments.length; i++) {
+        if (typeof arguments[i] === 'function') {
+            line_cb = arguments[i];
+            end_cb = arguments[i+1];
+            break;
+        }
     }
-
+    if (typeof line_cb !== 'function')
+        line_cb(Error('Callback arguments not correct! useage: readline(filepath, [option], line_cb, [end_cb])'));
+    if (!fs.existsSync(filePath))
+        line_cb(Error('file not exist: ' + filePath));
+    // create file read stream
     let stream = fs.createReadStream(filePath, {flags: 'r', mode: 438, autoClose: true, highWaterMark: option.chunkSize});
     let lines = [''];
-
+    // read and split into lines
     stream.on('data', chunk => {
         let readOut = chunk.toString().split(option.separator);
         lines[0] += readOut[0];
         lines = lines.concat(readOut.splice(1));
         while (lines.length > 1) {
-            cb(null, lines.splice(0, 1)[0], false);
+            line_cb(null, lines.splice(0, 1)[0]);
         }
     });
 
     stream.on('end', () => {
-        cb(null, lines[0], false);
-        cb(null, null, true);
+        line_cb(null, lines[0]);
+        end_cb && end_cb();
     });
 
-    stream.on('error', err => cb(err));
+    stream.on('error', err => line_cb(err));
 }
 
 module.exports = readline;
