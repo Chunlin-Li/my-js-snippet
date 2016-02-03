@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "async": "^1.4.2",
+    "bloomfilter": "0.0.16",
     "bunyan": "^1.5.1",
     "co": "^4.6.0",
     "limiter": "^1.1.0",

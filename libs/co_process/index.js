@@ -10,7 +10,7 @@ var worker1 = cp.fork('./worker');
 
 var buf = new Buffer(1024);
 buf.fill('x');
-server.buf = buf;
+server._buf = buf;
 
 server.listen(1337, function () {
     worker1.send('haha', server);
