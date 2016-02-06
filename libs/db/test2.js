@@ -4,14 +4,13 @@ var ref;
 
 var obj = {};
 var start;
-var N = 100000;
+var N = 8 * 1024 * 1024 -1;
 var x;
 start = process.hrtime();
 
 /*####################################*/
-var BigMap = require('../bigHashMap');
-var bigMap = new BigMap(24, 8, 10000, {keyType: 'string',valueType: 'number', extFragment: 0});
-var objMap = {};
+var buf1 = new Buffer(64 * 1024 * 1024);
+var buf2 = new Buffer(64 * 1024 * 1024);
 
 /*####################################*/
 
@@ -30,8 +29,8 @@ for(let i = 0 ; i < N; i++) {
 start = process.hrtime();
 /***********************************/
 for(let i = 0 ; i < N; i++ ) {
-    objMap['key' + i] = i;
-    x = objMap['key' + i];
+    buf2.writeDoubleBE(NaN, i);
+    buf2.readDoubleBE(i);
 }
 /***********************************/
 console.log('section 1 : ' + timeUse(start));
@@ -45,8 +44,8 @@ console.log('container cost ' + timeUse(start));
 start = process.hrtime();
 /***********************************/
 for(let i = 0 ; i < N; i++) {
-    bigMap.set('this\'s long! No.' + i, i);
-    x = bigMap.get('this\'s long! No.' + i);
+    buf1.writeDoubleBE(NaN, 1 + i);
+    buf1.readDoubleBE(1+i);
 }
 /***********************************/
 console.log('section 2 : ' + timeUse(start));
