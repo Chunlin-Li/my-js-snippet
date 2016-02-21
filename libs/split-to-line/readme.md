@@ -5,12 +5,12 @@
 主要为了用最简单的实现获得最高的性能, 和 [line-reader](https://github.com/nickewing/line-reader) 进行对比测试, 性能高 5-7 倍左右.
 
 调用参数:
-filePath : 输入文件路径
-cb: 回调函数. 参数 (err, buf), 如果在回调中返回 false, 将结束执行.
-end_cb: 结束回调. 无参数.
+* filePath : 输入文件路径
+* cb: 回调函数. 参数 (err, buf), 如果在回调中返回 false, 将结束执行.
+* end_cb: 结束回调. 无参数.
 
 options:
-chunkSize: 底层 stream 每次读取文件的缓存大小. Node 默认值为 4096B,  此处设置为 16MB.
+* chunkSize: 底层 stream 每次读取文件的缓存大小. Node 默认值为 4096B,  此处设置为 16MB.
 
 ------------------------
 
