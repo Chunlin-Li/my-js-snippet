@@ -1,41 +1,49 @@
-
-
-var httpHelper = (host, port) => {
+/**
+ * return a http request helper object.
+ * @param {string} host
+ * @param {number} port
+ * @returns {object} helper Object
+ */
+var createHttpHelper = (host, port) => {
     'use strict';
-    var http = require('http');
-    var func = (method) => {
+    let agent = undefined; // set your agent or leave it default.
+    let http = require('http');
+    let func = (method) => {
+        /**
+         * @param {string} path
+         * @param {string|buffer} data
+         * @param {function} callback  (responseBody, statusCode, statusMessage)
+         */
         return (path, data, callback) => {
             if (!callback && typeof data === 'function'){
                 callback = data;
                 data = undefined;
             }
-            let buffer = data && new Buffer(data);
+            let buffer = data instanceof Buffer ? data : (data && new Buffer(data));
             let request = http.request({
                 host: host,
                 port: port,
                 path: path,
                 method: method,
-                //agent: http.keepAliveAgent,
-                headers: {
-                    'Content-Length': buffer && buffer.length
+                agent: agent,
+                headers: buffer && {
+                    'Content-Length': buffer.length
                 }
             }, resp => {
                 let body = [];
                 resp.on('data', chunk => body.push(chunk));
                 resp.on('end', () => {
-                    if (body.length) callback(Buffer.concat(body).toString());
-                    else callback();
+                    let responseBody = body.length > 1 ? Buffer.concat(body).toString() : (body.length ? body[0].toString() : undefined);
+                    callback && callback(responseBody, resp.statusCode, resp.statusMessage);
                 });
             });
             request.on('error', err => console.log('error ', err, err.stack));
             request.end(buffer);
         }
     };
-    return {
-        'get': func('GET'),
-        'post': func('POST'),
-        'put': func('PUT'),
-        'delete': func('DELETE'),
-        'head': func('HEAD')
-    };
+
+    return http.METHODS.reduce((obj, method) => {
+        obj[method.toLowerCase()] = func(method);
+        return obj;
+    }, {});
 };
