@@ -71,8 +71,7 @@ readByLine('./01', (err, buf) => {
         console.log('ERR: ', err);
         return;
     }
-    console.log('#', buf.toString());
-    //return false;
+    console.log(buf.toString());
 }, () => {
     console.log('@FINISHED');
 });
