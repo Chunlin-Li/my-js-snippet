@@ -37,7 +37,7 @@ var createHttpHelper = (host, port) => {
                     callback && callback(responseBody, resp.statusCode, resp.statusMessage);
                 });
             });
-            request.on('error', err => console.log('error ', err, err.stack));
+            request.on('error', err => console.log('httpHelperError ', err, err.stack));
             request.end(buffer);
         }
     };
