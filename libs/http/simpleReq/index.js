@@ -33,8 +33,7 @@ var createHttpHelper = (host, port) => {
                 let body = [];
                 resp.on('data', chunk => body.push(chunk));
                 resp.on('end', () => {
-                    let responseBody = body.length > 1 ? Buffer.concat(body).toString() : (body.length ? body[0].toString() : undefined);
-                    callback && callback(responseBody, resp.statusCode, resp.statusMessage);
+                    callback && callback(body.length > 1 ? Buffer.concat(body).toString() : (body.length ? body[0].toString() : undefined), resp.statusCode, resp.statusMessage);
                 });
             });
             request.on('error', err => console.log('httpHelperError ', err, err.stack));

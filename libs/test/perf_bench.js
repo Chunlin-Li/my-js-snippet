@@ -2,11 +2,10 @@
 
 var obj = {},start, x,
     assert = require('assert'),
-    N = 1000 * 100;
+    N = 100 * 1;
 start = process.hrtime();
 
 /*####################################*/
-
 /*####################################*/
 
 for(let i = 0 ; i < N; i++) {  }
@@ -18,8 +17,7 @@ console.log('container cost ' + timeUse(start)); for(let i = 0 ; i < N; i++) {ob
 start = process.hrtime();
 /****   section 1 ******************/
 /***********************************/
-for(let i = 0 ; i < N; i++) {
-
+for(let i = 0 ; i < N; i++ ) {
 }
 /***********************************/
 console.log('section 1 : ' + timeUse(start));start = process.hrtime();for(let i = 0 ; i < N; i++) {} console.log('container cost ' + timeUse(start));
@@ -29,11 +27,19 @@ console.log('section 1 : ' + timeUse(start));start = process.hrtime();for(let i 
 start = process.hrtime();
 /****   section 2 ******************/
 /***********************************/
-for(let i = 0 ; i < N; i++ ) {
-
+for(let i = 0 ; i < N; i++) {
 }
 /***********************************/
 console.log('section 2 : ' + timeUse(start));
 
 
 function timeUse(start) {var t = process.hrtime(start);return '' + (t[0] * 1000000000 + t[1])/1000000 + 'ms';}
+
+
+
+
+
+
+
+
+
