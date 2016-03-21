@@ -308,8 +308,8 @@ ifeq ($(strip $(foreach prefix,$(NO_LOAD),\
 endif
 
 quiet_cmd_regen_makefile = ACTION Regenerating $@
-cmd_regen_makefile = cd $(srcdir); /usr/local/lib/node_modules/npm/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "--toplevel-dir=." -I/home/chunlin/WebstormProjects/my-js-snippet/src/pri/build/config.gypi -I/usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi -I/home/chunlin/.node-gyp/4.3.1/include/node/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/home/chunlin/.node-gyp/4.3.1" "-Dnode_gyp_dir=/usr/local/lib/node_modules/npm/node_modules/node-gyp" "-Dnode_lib_file=node.lib" "-Dmodule_root_dir=/home/chunlin/WebstormProjects/my-js-snippet/src/pri" binding.gyp
-Makefile: $(srcdir)/../../../../.node-gyp/4.3.1/include/node/common.gypi $(srcdir)/build/config.gypi $(srcdir)/binding.gyp $(srcdir)/../../../../../../usr/local/lib/node_modules/npm/node_modules/node-gyp/addon.gypi
+cmd_regen_makefile = cd $(srcdir); /home/chunlin/develop/nodev571/lib/node_modules/npm/node_modules/node-gyp/gyp/gyp_main.py -fmake --ignore-environment "--toplevel-dir=." -I/home/chunlin/WebstormProjects/my-js-snippet/src/pri/build/config.gypi -I/home/chunlin/develop/nodev571/lib/node_modules/npm/node_modules/node-gyp/addon.gypi -I/home/chunlin/.node-gyp/5.7.1/include/node/common.gypi "--depth=." "-Goutput_dir=." "--generator-output=build" "-Dlibrary=shared_library" "-Dvisibility=default" "-Dnode_root_dir=/home/chunlin/.node-gyp/5.7.1" "-Dnode_gyp_dir=/home/chunlin/develop/nodev571/lib/node_modules/npm/node_modules/node-gyp" "-Dnode_lib_file=node.lib" "-Dmodule_root_dir=/home/chunlin/WebstormProjects/my-js-snippet/src/pri" binding.gyp
+Makefile: $(srcdir)/../../../../.node-gyp/5.7.1/include/node/common.gypi $(srcdir)/../../../../develop/nodev571/lib/node_modules/npm/node_modules/node-gyp/addon.gypi $(srcdir)/build/config.gypi $(srcdir)/binding.gyp
 	$(call do_cmd,regen_makefile)
 
 # "all" is a concatenation of the "all" targets from all the included

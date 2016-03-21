@@ -31,10 +31,10 @@ CFLAGS_CC_Debug := \
 	-std=gnu++0x
 
 INCS_Debug := \
-	-I/home/chunlin/.node-gyp/4.3.1/include/node \
-	-I/home/chunlin/.node-gyp/4.3.1/src \
-	-I/home/chunlin/.node-gyp/4.3.1/deps/uv/include \
-	-I/home/chunlin/.node-gyp/4.3.1/deps/v8/include \
+	-I/home/chunlin/.node-gyp/5.7.1/include/node \
+	-I/home/chunlin/.node-gyp/5.7.1/src \
+	-I/home/chunlin/.node-gyp/5.7.1/deps/uv/include \
+	-I/home/chunlin/.node-gyp/5.7.1/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 DEFS_Release := \
@@ -66,10 +66,10 @@ CFLAGS_CC_Release := \
 	-std=gnu++0x
 
 INCS_Release := \
-	-I/home/chunlin/.node-gyp/4.3.1/include/node \
-	-I/home/chunlin/.node-gyp/4.3.1/src \
-	-I/home/chunlin/.node-gyp/4.3.1/deps/uv/include \
-	-I/home/chunlin/.node-gyp/4.3.1/deps/v8/include \
+	-I/home/chunlin/.node-gyp/5.7.1/include/node \
+	-I/home/chunlin/.node-gyp/5.7.1/src \
+	-I/home/chunlin/.node-gyp/5.7.1/deps/uv/include \
+	-I/home/chunlin/.node-gyp/5.7.1/deps/v8/include \
 	-I$(srcdir)/node_modules/nan
 
 OBJS := \
