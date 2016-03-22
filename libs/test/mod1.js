@@ -1,8 +1,13 @@
 'use strict';
 
-var suspend = require('suspend');
+
+var count = 0;
+
+setInterval(() => {
+    count ++;
+}, 1000);
 
 
-module.exports = suspend(function*(){
 
-});
+module.exports.val = () => count;
+
