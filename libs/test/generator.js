@@ -1,15 +1,29 @@
 'use strict';
 
-var fs = require('fs');
-var suspend = require('suspend');
-//var mod1 = require('mod1');
+var prevSecond = Date.now()/10000 >> 0; // 10s average qps
+var bucket = {};
+var qps = {};
+
+function setQps(type) {
+    bucket[type] = bucket[type] + 1 || 1;
+    if (Date.now()/10000 >> 0 !== prevSecond) {
+        prevSecond = Date.now()/10000 >> 0;
+        qps[type] = bucket[type]/10;
+        bucket[type] = 0;
+    }
+}
+
+function getQps(type) {
+    return qps[type];
+}
+
+//module.exports = foo;
 
 
+setInterval(()=>{
+    setQps('req');
+}, Math.random() * 30);
 
-suspend(function*() {
-    console.log('start');
-    var buf = yield fs.readFile('./limiter.js', {}, suspend.resume());
-    console.log(buf.toString());
-    console.log('end');
-})();
-
+setInterval(() => {
+    console.log(getQps('req'));
+}, 10000);
