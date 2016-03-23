@@ -13,6 +13,7 @@
     "bloomfilter": "0.0.16",
     "bunyan": "^1.5.1",
     "co": "^4.6.0",
+    "heapdump": "^0.3.7",
     "limiter": "^1.1.0",
     "line-reader": "^0.3.0",
     "lodash": "^3.10.1",
