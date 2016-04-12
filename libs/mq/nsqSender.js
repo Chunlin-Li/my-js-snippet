@@ -30,7 +30,7 @@ initiator.on('_connected_one', function (name) {
  * 初始化
  */
 function init(configs) {
-    // 需要先通过 http 请求从 lookupd 上获取 nsqd list, 然后随机取一个nsqd建立连接
+    // 需要先通过 http 请求从 lookupd 上获取 nsqd listSubDir, 然后随机取一个nsqd建立连接
     for (let i in configs) {
         let name = configs[i][0];
         _configs[name] = {
@@ -56,7 +56,7 @@ function getSender(name) {
     if (_senders[name]) {
         return _senders[name];
     }
-    throw new Error('no thus sender. please add config to config list', 1);
+    throw new Error('no thus sender. please add config to config listSubDir', 1);
 }
 
 

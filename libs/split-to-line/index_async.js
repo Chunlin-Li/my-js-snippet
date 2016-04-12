@@ -1,6 +1,6 @@
 /**
  * @param {string} filePath : file absolute path.
- * @param {function} cb : cb(err, buf, next){ ... }.  return false stop reading  next(false) will stop reading
+ * @param {function} cb : cb(err, buf, nextFile){ ... }.  return false stop reading  nextFile(false) will stop reading
  * @param {function} end_cb : end_cb(){ ... }
  */
 function readByLine(filePath, cb, end_cb) {
