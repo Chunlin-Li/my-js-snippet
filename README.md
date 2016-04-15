@@ -12,3 +12,5 @@ JS 代码片段
 * [remote node web server heapdump](https://github.com/Chunlin-Li/my-js-snippet/tree/master/libs/remote_heapdump)
 
 * [id generator](https://github.com/Chunlin-Li/my-js-snippet/tree/master/libs/idGenerator)
+
+* [a simple generator executor](https://github.com/Chunlin-Li/my-js-snippet/tree/master/libs/generator-yield)

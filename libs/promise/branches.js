@@ -1,51 +1,29 @@
 'use strict';
 
 
-function foo (time, name) {
-    return new Promise(function (resolve, reject){
-        let timeout = setTimeout(() => {
-            resolve('foo ' + name);
-        }, time);
-    });
-}
+Promise.resolve({type:2, name: 'cat'})
+.then(res => {
+    if (res.type === 2) {
+        return doType2(res);
+    }
+    return res;
+})
+.then(res => {
+    res.name = res.name + res.type;
+    return res;
+})
+.then(res => {
+    return JSON.stringify(res);
+})
+    .then(res => console.log(res))
+    .catch(err => console.error('catched!', err));
 
-function bar (time, name) {
-    return new Promise(function (resolve, reject) {
-        let timeout = setTimeout(() => {
-            resolve('bar ' + name);
-        }, time);
-    });
-}
 
-
-function baz (time, name) {
-    return new Promise(function (resolve, reject) {
-        let timeout = setTimeout(() => {
-            resolve('baz ' + name);
-        }, time);
-    });
-}
-
-function qux (time, name) {
-    return new Promise(function (resolve, reject) {
-
-        if ('Tom' === name) {
-            foo(200, name).then(res => {
-                if (false) {
-                    return bar(250, 'Jerry')
-                } else {
-                    resolve(baz(150, 'Tom and Jerry'));
-                }
-            }).then(res =>{
-                
-            });
-        } else {
-            resolve('Deny!')
+function doType2(res) {
+    return Promise.resolve({
+        then(resolve){
+            res.age = res.name.length * res.type;
+            return res;
         }
-
     });
 }
-
-
-qux(300, 'Tom')
-    .then(res => console.log(res));
