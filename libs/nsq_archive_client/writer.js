@@ -4,20 +4,42 @@ var event = require('events');
 var http = require('http');
 var util = require('util');
 
-const RECONN_INTERVAL = 5 * 60 * 1000; // 5 min
+const RECONN_INTERVAL = 5 * 60 * 1000; // min
 const MAX_QUEUE_LEN = 1000;
-const SEND_RETRY_TIMES = 3;
-const RECON_RETRY_TIMES = 5;
-const RETRY_DELAY = 500; // 500ms
+const SEND_RETRY_TIMES = 3; // for send
+const RECON_RETRY_TIMES = 5; // for auto reconnect
+const RETRY_DELAY = 500; // ms
 
-/* Events :  error  reconnect */
+/**
+ * Construct a new NSQSender to handle everything.
+ * You provide a lookupd address, it will find nsqd, random pick and auto reconnect.
+ * You send message, it will check error info and retry.
+ * If the net failure cause a socket error, it will auto lookup and retry other valid node.
+ * You new instance and send message synchronously, it will handle the async initiation.
+ *
+ * @class
+ * @param {string} host  nsqlookupd host
+ * @param {number} port  nsqlookupd http port
+ * @param {object} options  this options pass to nsqjs module directly
+ *
+ * @function send (topic, message, callback)
+ * @function destroy
+ *
+ * @event error NSQSender general error event. it's safe to listen a ignore handler like `function(){}`
+ * @event close If this event be fired, the NSQSender instance will be destroyed after current handle finished. you need to handle this!
+ *
+ * @event lookup
+ * @event nsqd_connected fired when NSQSender connected. one param: socket address string.
+ * @event nsqd_error fired when nsqd has a error event. one param: error
+ * @event nsqd_closed fired when nsqd closed.
+ * @event msg_error fired when send message to nsq encounter an error.
+ * @event lookupd_error fired when connect to nsqlookupd error or response code not 200
+ */
 
 module.exports = NSQSender;
-
-// lookupd host and port
 function NSQSender(host, port, options) {
     if (!this instanceof NSQSender){
-        return new NSQSender(host, prot, options);
+        return new NSQSender(host, port, options);
     }
     event.EventEmitter.call(this);
 
@@ -27,13 +49,14 @@ function NSQSender(host, port, options) {
     this.options = options;
     this.queue = []; // need schedule periodic
     this._timeout = null;
-    this._reconnect_retry = 0;
+    this._connect_retry = 0;
     this.destroyed = false;
+    this._flushInterval = null;
 
-    this._lookup();
+    lookup.bind(this)();
 
     // set interval to flush queue
-    setInterval(this._flushQueue.bind(this), 5000);
+    this._flushInterval = setInterval(flushQueue.bind(this), 5000);
 }
 util.inherits(NSQSender, event.EventEmitter);
 
@@ -41,14 +64,16 @@ util.inherits(NSQSender, event.EventEmitter);
 NSQSender.prototype.destroy = function destroy() {
     if (this.nsqd) {
         this.nsqd.close();
+        this.nsqd = null;
     }
     this.destroyed = true;
     this.queue = null;
     clearTimeout(this._timeout);
+    clearInterval(this._flushInterval);
 };
 
 NSQSender.prototype.send = function send(topic, msg, callback) {
-    callback = callback || function(){};
+    // callback = callback || function(){};
     if (this.destroyed) {
         throw new Error('should not send msg after destroyed');
     }
@@ -57,14 +82,16 @@ NSQSender.prototype.send = function send(topic, msg, callback) {
         this.queue.push(arguments);
         if (this.queue.length > MAX_QUEUE_LEN) {
             let e = new Error('Max Queue Length Reached');
-            callback(e);
+            callback && callback(e);
             this.emit('error', e);
+            this.emit('close');
             this.destroy();
         }
     } else {
+        let self = this;
         this.nsqd.publish(topic, msg, err => {
             if (err) {
-                console.log('nsq send msg error:', err);
+                self.emit('msg_error', err);
                 if (arguments['retry'] > SEND_RETRY_TIMES) {
                     callback && callback('nsq msg send failed after retry.', msg.slice(0, 100));
                 } else {
@@ -72,62 +99,68 @@ NSQSender.prototype.send = function send(topic, msg, callback) {
                     this.queue.push(arguments);
                 }
             } else {
-                callback(null, msg);
+                callback && callback();
             }
         });
     }
 };
 
-NSQSender.prototype._connectNSQD = function _connectNSQD(host, port, options) {
+
+function connectNSQD (host, port, options) {
     let writer = new nsq.Writer(host, port, options);
     writer.on(nsq.Writer.READY, onREADY.bind(writer, this));
     writer.on(nsq.Writer.ERROR, onERROR.bind(writer, this));
     writer.on(nsq.Writer.CLOSED, onCLOSED.bind(writer, this));
     writer.connect();
     return writer;
-};
+}
 
-NSQSender.prototype._flushQueue = function (){
+
+function flushQueue () {
     // send queued message and clear
     for (var t of this.queue.splice(0)) {
         this.send.apply(this, t);
     }
-};
+}
 
 function onREADY(self) {
     // set self.nsqd
     self.nsqd = this;
-    console.log('ready prot:', this.nsqdPort);
-    self._flushQueue();
+    self.emit('nsqd_connected', this.nsqdHost + this.nsqdPort);
+    // self._flushQueue();
+    flushQueue.bind(self)();
     // set reconnect timeout
     self._timeout = setTimeout(self.nsqd.close.bind(self.nsqd) , RECONN_INTERVAL * (Math.random() + 1));
     // clear retry counter
-    self._reconnect_retry = 0;
+    self._connect_retry = 0;
 }
 
 function onERROR(self, err) {
     // log
-    console.error('nsqd/lookupd error: ', err, err.stack);
+    self.emit('nsqd_error', err);
     // count retry time
-    if (++ self._reconnect_retry > RECON_RETRY_TIMES){
+    if (++ self._connect_retry > RECON_RETRY_TIMES){
         self.emit('error', err);
+        self.emit('close');
         self.destroy();
     }
 }
 
 function onCLOSED(self) {
-    console.log('nsqd writer closed');
+    self.emit('nsqd_closed');
     // unset self.nsqd
     self.nsqd = null;
     // reconnect
-    self._lookup();
-    self.emit('reconnect');
+    // self._lookup();
+    if (!self.destroyed) {
+        lookup.bind(self)();
+        self.emit('reconnect');
+    }
     // cleart time out
     clearTimeout(self._timeout);
 }
 
-
-NSQSender.prototype._lookup = function _lookup() {
+function lookup () {
     if (this.destroyed) {
         throw new Error('should not send msg after destroyed');
     }
@@ -140,52 +173,73 @@ NSQSender.prototype._lookup = function _lookup() {
         });
     }).on('error', err  => {
         err.message = 'request lookupd error. Caused by:' + err.message;
+        self.emit('lookupd_error', err);
         onERROR(self, err);
-        setTimeout(() => {
-            self._lookup();
-        }, RETRY_DELAY);
+        retry();
     });
 
 
     function parseResult(res) {
         res = JSON.parse(res);
         if (res.status_code !== 200) {
-            console.error('NSQ Lookup Error. lookup nodes failed: ' + res.status_txt);
+            let err = new Error('NSQ Lookup failed. http response: ' + res.status_code + res.status_txt);
+            self.emit('lookupd_error', err);
+            retry();
             return;
         }
         let count = res.data.producers.length;
         let producer = res.data.producers[Math.floor(Math.random() * count)]; // get a random nsqd
 
         if (producer) {
-            self._connectNSQD(producer.broadcast_address, producer.tcp_port, self.options);
+            connectNSQD.bind(self)(producer.broadcast_address, producer.tcp_port, self.options);
         } else {
-            if (++ self._reconnect_retry > RECON_RETRY_TIMES) {
+            if (++ self._connect_retry > RECON_RETRY_TIMES) {
                 self.emit('error', new Error('no valid nsqd node'));
+                self.emit('close');
                 self.destroy();
             } else {
-                console.log('retry lookup, ', self._reconnect_retry);
-                setTimeout(() => {
-                    self._lookup();
-                }, RETRY_DELAY);
+                retry();
             }
         }
     }
-};
+
+    function retry() {
+        setTimeout(() => {
+            lookup.bind(self)();
+        }, RETRY_DELAY);
+    }
+}
 
 
-// var NSQSender = require('./writer');
-// var count = 0;
-//
-// var sender = new NSQSender('127.0.0.1', 4161);
-// sender.on('error', err => console.log('zzz ', err));
-// sender.on('reconnect', () => console.log('zzz reconnect'));
-//
-//
-// setInterval(() => {
-//     let start = Date.now();
-//     sender.send('senderTest', 'Hello ' + count++, (err, msg) => {
-//         if (err) console.error(err);
-//         else console.log('time:', Date.now() - start, msg);
-//     });
-// }, 100);
 
+/* ########################################################### */
+
+/* example: */
+
+// /*
+
+ var sender = new NSQSender('127.0.0.1', 4161); // this is all you need
+
+ // establish this error event, you should abandon this sender if it trigger a error event
+ sender.on('error', err => {
+ console.error(err, err.stack);
+ process.exit(1); // if module strict dependent on nsq, you should exit when nsq error.
+ });
+
+ // just notify you when it reconnect. default it will auto reconnect every 5 min.
+ sender.on('reconnect', () => console.log('reconnecting'));
+
+ // the only method is send. without callback
+ sender.send('testTopic3', 'I dont care this message');
+
+ // send with callback
+ sender.send('testTopic3', 'Hello nsq', err => {
+ if (err) console.error(err);
+ else console.log('send finished');
+ });
+
+ setTimeout(() => {
+ sender.destroy();
+ }, 300);
+
+ // */

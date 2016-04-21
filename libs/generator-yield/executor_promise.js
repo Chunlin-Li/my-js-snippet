@@ -1,6 +1,6 @@
 
 function simpleExecutor(gen) {
-    gen = gen();
+    let args = [].splice.call(arguments, 1);
     return (function looper (prom) {
         return prom.then(realValue => {
             let t =gen.next(realValue); // t = {value: promise, done:xxx}

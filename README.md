@@ -14,3 +14,5 @@ JS 代码片段
 * [id generator](https://github.com/Chunlin-Li/my-js-snippet/tree/master/libs/idGenerator)
 
 * [a simple generator executor](https://github.com/Chunlin-Li/my-js-snippet/tree/master/libs/generator-yield)
+
+* [nsqjs sender wrapper, provide a very simple API, easy to use]()
