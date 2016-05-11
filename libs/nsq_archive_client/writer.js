@@ -61,15 +61,17 @@ function NSQSender(host, port, options) {
 util.inherits(NSQSender, event.EventEmitter);
 
 
-NSQSender.prototype.destroy = function destroy() {
+NSQSender.prototype.destroy = function destroy(err) {
+    this.emit('error', err);
+    this.destroyed = true;
     if (this.nsqd) {
         this.nsqd.close();
         this.nsqd = null;
     }
-    this.destroyed = true;
     this.queue = null;
     clearTimeout(this._timeout);
     clearInterval(this._flushInterval);
+    this.emit('close');
 };
 
 NSQSender.prototype.send = function send(topic, msg, callback) {
@@ -78,30 +80,32 @@ NSQSender.prototype.send = function send(topic, msg, callback) {
         throw new Error('should not send msg after destroyed');
     }
     if (!this.nsqd) {
-        // enqueue
-        this.queue.push(arguments);
-        if (this.queue.length > MAX_QUEUE_LEN) {
-            let e = new Error('Max Queue Length Reached');
-            callback && callback(e);
-            this.emit('error', e);
-            this.emit('close');
-            this.destroy();
-        }
+        enQueue.bind(this)(arguments, callback);
     } else {
         let self = this;
         this.nsqd.publish(topic, msg, err => {
             if (err) {
                 self.emit('msg_error', err);
-                if (arguments['retry'] > SEND_RETRY_TIMES) {
+                if (arguments['5'] > SEND_RETRY_TIMES) { // arguments['5'] 用来记录 retry 次数.
                     callback && callback('nsq msg send failed after retry.', msg.slice(0, 100));
                 } else {
-                    arguments['retry'] = arguments['retry'] + 1 || 1;
-                    this.queue.push(arguments);
+                    arguments['5'] = arguments['5'] + 1 || (arguments.length = 6, 1);
+                    enQueue.bind(this)(arguments, callback);
                 }
             } else {
                 callback && callback();
             }
         });
+    }
+
+    function enQueue(argus, callback) {
+        if (this.queue.length > MAX_QUEUE_LEN) {
+            let e = new Error('Max Queue Length Reached');
+            callback && callback(e);
+            this.destroy(e);
+        } else {
+            this.queue.push(argus);
+        }
     }
 };
 
@@ -140,9 +144,7 @@ function onERROR(self, err) {
     self.emit('nsqd_error', err);
     // count retry time
     if (++ self._connect_retry > RECON_RETRY_TIMES){
-        self.emit('error', err);
-        self.emit('close');
-        self.destroy();
+        self.destroy(err);
     }
 }
 
@@ -194,9 +196,7 @@ function lookup () {
             connectNSQD.bind(self)(producer.broadcast_address, producer.tcp_port, self.options);
         } else {
             if (++ self._connect_retry > RECON_RETRY_TIMES) {
-                self.emit('error', new Error('no valid nsqd node'));
-                self.emit('close');
-                self.destroy();
+                self.destroy(new Error('no valid nsqd node'));
             } else {
                 retry();
             }
@@ -211,16 +211,15 @@ function lookup () {
 }
 
 
-
 /* ########################################################### */
 
 /* example: */
 
-// /*
+/*
 
  var sender = new NSQSender('127.0.0.1', 4161); // this is all you need
 
- // establish this error event, you should abandon this sender if it trigger a error event
+ // listen this error event, you should abandon this sender if it trigger a error event
  sender.on('error', err => {
  console.error(err, err.stack);
  process.exit(1); // if module strict dependent on nsq, you should exit when nsq error.
@@ -230,16 +229,16 @@ function lookup () {
  sender.on('reconnect', () => console.log('reconnecting'));
 
  // the only method is send. without callback
- sender.send('testTopic3', 'I dont care this message');
+ sender.send('testTopic', 'I dont care this message');
 
  // send with callback
- sender.send('testTopic3', 'Hello nsq', err => {
+ sender.send('testTopic', 'Hello nsq', err => {
  if (err) console.error(err);
  else console.log('send finished');
  });
 
  setTimeout(() => {
  sender.destroy();
- }, 300);
+ }, 1000);
 
- // */
+ */
