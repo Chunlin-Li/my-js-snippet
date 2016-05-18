@@ -56,28 +56,28 @@ function NSQSender(host, port, options) {
     lookup.bind(this)();
 
     // set interval to flush queue
-    this._flushInterval = setInterval(flushQueue.bind(this), 5000);
+    this._flushInterval = setInterval(flushQueue.bind(this), 1000);
 }
 util.inherits(NSQSender, event.EventEmitter);
 
 
 NSQSender.prototype.destroy = function destroy(err) {
-    this.emit('error', err);
     this.destroyed = true;
     if (this.nsqd) {
         this.nsqd.close();
         this.nsqd = null;
+        this.queue = null;
+        clearTimeout(this._timeout);
+        clearInterval(this._flushInterval);
+        this.emit('close');
+        this.emit('error', err);
     }
-    this.queue = null;
-    clearTimeout(this._timeout);
-    clearInterval(this._flushInterval);
-    this.emit('close');
 };
 
 NSQSender.prototype.send = function send(topic, msg, callback) {
     // callback = callback || function(){};
     if (this.destroyed) {
-        throw new Error('should not send msg after destroyed');
+        throw new Error('should not send msg after NSQSender destroyed');
     }
     if (!this.nsqd) {
         enQueue.bind(this)(arguments, callback);
@@ -101,8 +101,8 @@ NSQSender.prototype.send = function send(topic, msg, callback) {
     function enQueue(argus, callback) {
         if (this.queue.length > MAX_QUEUE_LEN) {
             let e = new Error('Max Queue Length Reached');
-            callback && callback(e);
             this.destroy(e);
+            callback && callback(e);
         } else {
             this.queue.push(argus);
         }
@@ -134,7 +134,7 @@ function onREADY(self) {
     // self._flushQueue();
     flushQueue.bind(self)();
     // set reconnect timeout
-    self._timeout = setTimeout(self.nsqd.close.bind(self.nsqd) , RECONN_INTERVAL * (Math.random() + 1));
+    // self._timeout = setTimeout(self.nsqd.close.bind(self.nsqd) , RECONN_INTERVAL * (Math.random() + 1));
     // clear retry counter
     self._connect_retry = 0;
 }

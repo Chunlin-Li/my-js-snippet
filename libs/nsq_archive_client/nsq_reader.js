@@ -32,15 +32,15 @@ function establish(nsqlookupd, channel, topic, wrapper) {
 }
 
 function onClose(){
-    console.info(`NSQReader closed. [${this.topic}]`);
-    this.wrapper._reader = establish(this.wrapper.hostAddr, this.channel, this.topic, this.wrapper);
+    console.info(`NSQReader closed. [${this.topic}]`); // nsqd exceptional close will auto reconnect after a while.
+    // this.wrapper._reader = establish(this.wrapper.hostAddr, this.channel, this.topic, this.wrapper);
 }
 
 function onConnect() {
     console.info(`NSQReader connect. [${this.topic}]`);
 }
 
-function onError() {
+function onError(err) {
     console.error(this.topic, ' NSQReader error ', err);
 }
 

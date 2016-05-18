@@ -23,8 +23,8 @@ function generate(hostID) {
 module.exports = generate;
 
 /*
-// init
-var id_gen = generate(require('os').hostname());
-// generate
-console.log(id_gen());
-*/
+ // init
+ var id_gen = generate(require('os').hostname());
+ // generate
+ console.log(id_gen());
+ */
