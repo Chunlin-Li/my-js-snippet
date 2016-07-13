@@ -2,7 +2,7 @@
 
 var obj = {},start, x,
     assert = require('assert'),
-    N = 1000 * 1000 * 1;
+    N = 1000 * 10 * 1;
 start = process.hrtime();
 
 /*####################################*/
