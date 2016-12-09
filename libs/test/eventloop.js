@@ -1,8 +1,12 @@
 'use strict';
-var util = require('util');
 
 
-setInterval(() => {
-    console.log('count :', require('./mod1.js').val());
-}, 1000);
+var data = JSON.stringify({'id':883213}) + '"';
 
+try {
+    data = JSON.parse(data);
+} catch (e) {
+    console.error('error .....', e);
+} finally {
+    console.log('finally block exec');
+}

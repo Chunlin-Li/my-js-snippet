@@ -10,3 +10,9 @@ function parseID(id) {
     var inc = buf.readUIntBE(12,3);
     return date.toJSON() + ' ' + pid + ' ' + hostname + ' ' + inc;
 }
+
+var ids = 'WEZG0QBGDMR6Y14CAO5P';
+
+ids.split(' ').forEach(id => console.log(parseID(id)));
+
+

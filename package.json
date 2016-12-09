@@ -21,12 +21,14 @@
     "line-reader": "^0.3.0",
     "lodash": "^3.10.1",
     "lru-cache": "^2.7.3",
+    "moment": "^2.14.1",
     "mongodb": "^2.0.46",
     "mongoskin": "^2.0.3",
     "nsqjs": "^0.7.7",
+    "request": "^2.75.0",
     "rocketchat": "^0.1.2",
     "smaz": "^1.0.0",
-    "suspend": "^0.6.1",
+    "suspend": "^0.7.0",
     "uuid": "^2.0.1"
   }
 }
