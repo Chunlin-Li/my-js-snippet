@@ -1,29 +1,22 @@
 'use strict';
 
+let loader = {};
+
+loader.init = function () {
+    let i = 0;
+    let j = 8 / z.i;
+    console.log(j);
+};
+
+let call = function (callback) {
+    console.log('start');
+    callback && callback();
+};
 
 
-var RocketChat = require('rocketchat').RocketChatApi;
 
-var rocketChatApi = new RocketChat('https', 'host', '443', 'account', 'password');
-
-// rocketChatApi.version((err, body) => {
-//     if (err) {
-//         console.log(err);
-//     }
-//     console.log(body)
-// });
-
-
-// rocketChatApi.getPublicRooms(function(err,body){
-//     if(err)
-//         console.log(err);
-//     else
-//         console.log(body);
-// });
-
-rocketChatApi.sendMsg('sMBdX5ntSWoyyW7iT', 'Event: exchange too many timeout', function(err, body){
-    if(err)
-        console.log(err);
-    else
-        console.log(body);
-});
+try {
+    call(loader.init);
+} catch (err) {
+    console.error(err, err.stack);
+}
